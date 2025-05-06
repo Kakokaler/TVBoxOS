@@ -57,6 +57,11 @@ jobs:
           # 如果你的项目使用NDK，可能也需要指定NDK路径
           # echo "ndk.dir=${ANDROID_NDK_HOME}" >> local.properties
           echo "已创建 local.properties 文件，SDK 路径: ${ANDROID_SDK_ROOT}"
+      - name: Set up Python
+        if: ${{ env.commit }} # 根据你的逻辑决定是否需要 env.commit 条件
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.9' # 尝试使用 Python 3.9。如果不行，可以试试 '3.8' 或 '3.10'
       - name: Extra Modify
         if: ${{ env.commit }}
         working-directory: TVBoxOSC
