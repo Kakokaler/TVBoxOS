@@ -68,17 +68,17 @@ jobs:
         run: |
           echo '修改VersionName'
           if [ "${{ matrix.userName }}" == "takagen99" ]; then
-            sed -i 's/\.concat(buildTime())/ +\"${{ env.tag }}\"/g' app/build.gradle 
+            sed -i 's/\.concat(buildTime())/ +\"${{ env.tag }}\"/g' app/build.gradle
             sed -i "/android:text=/s#=\"#=\"${{ env.tag }}\\\\n\\\\n#" app/src/main/res/layout/dialog_about.xml
           else
             sed -i "/versionName/s#[0-9a-zA-Z_\.\'\"-]\+\$#\'${{ env.tag }}\'#" app/build.gradle
             sed -i "/android:text=/s#=\"#=\"${{ env.tag }}\\\\n\\\\n#" app/src/main/res/layout/dialog_about.xml
-          fi 
+          fi
           echo 'crosswalk源，防挂'
           if grep -q 'crosswalk' build.gradle; then
-            sed -i "/crosswalk/a\      maven { url 'https://o0halflife0o.github.io/crosswalk/releases/crosswalk/android/maven2' }" build.gradle
+            sed -i "/crosswalk/a\          maven { url 'https://o0halflife0o.github.io/crosswalk/releases/crosswalk/android/maven2' }" build.gradle
           else
-            sed -i "/jitpack.io/a\      maven { url 'https://o0halflife0o.github.io/crosswalk/releases/crosswalk/android/maven2' }" build.gradle
+            sed -i "/jitpack.io/a\          maven { url 'https://o0halflife0o.github.io/crosswalk/releases/crosswalk/android/maven2' }" build.gradle
           fi
 
           # --- 针对 Chaquopy 的修改 ---
@@ -109,16 +109,16 @@ jobs:
         if: ${{ env.commit }}
         working-directory: TVBoxOSC
         run: |
-          signingConfigs='ICAgIHNpZ25pbmdDb25maWdzIHtcCiAgICAgICAgaWYgKHByb2plY3QuaGFzUHJvcGVydHkoIlJFTEVBU0VfU1RPUkVfRklMRSIpKSB7XAogICAgICAgICAgICBteUNvbmZpZyB7XAogICAgICAgICAgICAgICAgc3RvcmVGaWxlIGZpbGUoUkVMRUFTRV9TVE9SRV9GSUxFKVwKICAgICAgICAgICAgICAgIHN0b3JlUGFzc3dvcmQgUkVMRUFTRV9TVE9SRV9QQVNTV09SRFwKICAgICAgICAgICAgICAgIGtleUFsaWFzIFJFTEVBU0VfS0VZX0FMSUFTXAogICAgICAgICAgICAgICAga2V5UGFzc3dvcmQgUkVMRUFTRV9LRVlfUEFTU1dPUkRcCiAgICAgICAgICAgICAgICB2MVNpZ25pbmdFbmFibGVkIHRydWVcCiAgICAgICAgICAgICAgICB2MlNpZ25pbmdFbmFibGVkIHRydWVcCiAgICAgICAgICAgICAgICBlbmFibGVWM1NpZ25pbmcgPSB0cnVlXAogICAgICAgICAgICAgICAgZW5hYmxlVjRTaWduaW5nID0gdHJ1ZVwKICAgICAgICAgICAgfVwKICAgICAgICB9XAogICAgfVwKXA=='
+          signingConfigs='ICAgIHNpZ25pbmdDb25maWdzIH PossessionhciB7XAogICAgICAgICAgICBpZiAocHJvamVjdC5oYXNQcm9wZXJ0eSgiUkVMRUFTRV9TVE9SRV9GSUxFIikpIHtcCiAgICAgICAgICAgICAgICBteUNvbmZpZyB7XAogICAgICAgICAgICAgICAgICBzdG9yZUZpbGUgZmlsZShSRUxFQVNFX1NUT1JFX0ZJTEUpXAogICAgICAgICAgICAgICAgICBzdG9yZVBhc3N3b3JkIFJFTEVBU0VfU1RPUkVfUEFTU1dPUkRcCiAgICAgICAgICAgICAgICAgIGtleUFsaWFzIFJFTEVBU0VfS0VZX0FMSUFTXAogICAgICAgICAgICAgICAgICBrZXlQYXNzd29yZCBSRUxFQVNFX0tFWV9QQVNTV09SRFwKICAgICAgICAgICAgICAgICAgdjFTaWduaW5nRW5hYmxlZCB0cnVlXAogICAgICAgICAgICAgICAgICB2MlNpZ25pbmdFbmFibGVkIHRydWVcCiAgICAgICAgICAgICAgICAgIGVuYWJsZVYzU2lnbmluZyA9IHRydWVcCiAgICAgICAgICAgICAgICAgIGVuYWJsZVY0U2lnbmluZyA9IHRydWVcCiAgICAgICAgICAgICAgICB9XAogICAgICAgIH1cCiAgICB9XQo='
           signingConfig='ICAgICAgICAgICAgaWYgKHByb2plY3QuaGFzUHJvcGVydHkoIlJFTEVBU0VfU1RPUkVfRklMRSIpKSB7XAogICAgICAgICAgICAgICAgc2lnbmluZ0NvbmZpZyBzaWduaW5nQ29uZmlncy5teUNvbmZpZ1wKICAgICAgICAgICAgfVwK'
           signingConfigs="$(echo "$signingConfigs" |base64 -d )"
           signingConfig="$(echo "$signingConfig" |base64 -d )"
           sed -i -e "/defaultConfig {/i\\$signingConfigs " -e "/debug {/a\\$signingConfig " -e "/release {/a\\$signingConfig " app/build.gradle
           cp -f ${{ github.workspace }}/.github/workflows/TVBoxOSC.jks app/TVBoxOSC.jks
-          sed -i '$a\RELEASE_STORE_FILE=./TVBoxOSC.jks'     ./gradle.properties
-          sed -i '$a\RELEASE_KEY_ALIAS=TVBoxOSC'            ./gradle.properties
-          sed -i '$a\RELEASE_STORE_PASSWORD=TVBoxOSC'       ./gradle.properties
-          sed -i '$a\RELEASE_KEY_PASSWORD=TVBoxOSC'         ./gradle.properties
+          sed -i '$a\RELEASE_STORE_FILE=./TVBoxOSC.jks'      ./gradle.properties
+          sed -i '$a\RELEASE_KEY_ALIAS=TVBoxOSC'             ./gradle.properties
+          sed -i '$a\RELEASE_STORE_PASSWORD=TVBoxOSC'        ./gradle.properties
+          sed -i '$a\RELEASE_KEY_PASSWORD=TVBoxOSC'          ./gradle.properties
           sed -i 's/^#\(org.gradle.jvmargs=.*\)/\1/'        ./gradle.properties
       - uses: actions/setup-java@v4
         if: ${{ matrix.java_ver }}
@@ -152,23 +152,25 @@ jobs:
             mv "$file" "apk/$new_base"
           done
           mv sourceCode-${{ env.commitS }}.* apk/
-- name: Release Note # 步骤名称
-        if: <span class="math-inline">\{\{ env\.commit \}\} \# 条件判断
-working\-directory\: TVBoxOSC \# 工作目录
-run\: \| \# 使用 \| 表示多行字符串，其后的所有行都需要相对于此行额外缩进
-\# 尝试从 workflow 仓库的 README\.md 中获取上一次记录的 commit SHA
-\# 同时捕获 grep 命令的退出状态
-lastCommit\=</span>(grep "q215613905\/TVBoxOS" <span class="math-inline">\{\{ github\.workspace \}\}/README\.md \|grep \-o '\[a\-z0\-9\]\\\{40\\\}'\)
-grep\_status\=</span>? # 捕获上一个管道命令的退出状态
+      - name: Release Note # 更新日志生成步骤
+        if: ${{ env.commit }} # 仅在成功获取到 commit 时执行
+        working-directory: TVBoxOSC # 在克隆的 TVBoxOSC 仓库目录下执行
+        run: | # 多行脚本开始
+          # 尝试从 workflow 仓库的 README.md 中获取上一次记录的 commit SHA
+          # 同时捕获 grep 命令的退出状态
+          lastCommit=$(grep "${{ matrix.userName }}\/${{ matrix.repoName }}" ${{ github.workspace }}/README.md |grep -o '[a-z0-9]\{40\}')
+          grep_status=$? # 捕获 grep 管道命令的退出状态
 
-          echo "--- Debug Info ---" # 调试分隔符
-          echo "Detected lastCommit from README: '$lastCommit' (grep exit status: <span class="math-inline">grep\_status\)" \# 打印 lastCommit 的值和 grep 的退出状态
-echo "Current commit \(full\)\: '</span>{{ env.commit }}'"
-          echo "Current commit (short): '<span class="math-inline">\{\{ env\.commitS \}\}'"
-echo "\-\-\- End Debug Info \-\-\-"
-export LESSCHARSET\=utf\-8
-\# 清空或创建日志文件并写入头部信息
-echo \-e "Credit\: \[</span>{{ matrix.userName }}](${{ env.upStream }})\nCommit: ${{ env.commit }}\nChangelog:\n\`\`\`" > apk/${{ matrix.userName }}-Release.log
+          echo "--- Debug Info ---" # 调试信息分隔符
+          # 打印 lastCommit 的值和 grep 的退出状态
+          echo "Detected lastCommit from README: '$lastCommit' (grep exit status: $grep_status)"
+          echo "Current commit (full): '${{ env.commit }}'" # 打印当前完整 commit SHA
+          echo "Current commit (short): '${{ env.commitS }}'" # 打印当前短 commit SHA
+          echo "--- End Debug Info ---"
+
+          export LESSCHARSET=utf-8
+          # 清空或创建日志文件并写入头部信息
+          echo -e "Credit: [${{ matrix.userName }}](${{ env.upStream }})\nCommit: ${{ env.commit }}\nChangelog:\n\`\`\`" > apk/${{ matrix.userName }}-Release.log
 
           # 根据 lastCommit 是否为空或是否等于当前 commit 来决定 git log 的范围
           if [ -z "$lastCommit" ] || [ "${{ env.commit }}" == "$lastCommit" ]; then
@@ -178,10 +180,17 @@ echo \-e "Credit\: \[</span>{{ matrix.userName }}](${{ env.upStream }})\nCommit:
             git log --pretty=format:%B ${{ env.commitS }} -1
           else
             echo "Condition not met. Running git log for range."
-            echo "Executing git log: git log --pretty=format:%B ${lastCommit:0:7}...${{ env.commitS }}"
-            # 获取 lastCommit 到当前 commit 之间的 commit 消息 (不包含 lastCommit)
-            # 修正的 git log 范围语法: <旧commit>...<新commit>
-            git log --pretty=format:%B ${lastCommit:0:7}...${{ env.commitS }}
+            # 检查 lastCommit 是否至少有 7 个字符，避免切片错误
+            if [ ${#lastCommit} -lt 7 ]; then
+              echo "Error: lastCommit '$lastCommit' is too short to slice."
+              # 可以选择在此处退出或改变行为，例如只获取最新 commit
+              git log --pretty=format:%B ${{ env.commitS }} -1 # 发生错误时回退到只获取最新 commit
+            else
+              echo "Executing git log: git log --pretty=format:%B ${lastCommit:0:7}...${{ env.commitS }}"
+              # 获取 lastCommit 到当前 commit 之间的 commit 消息 (不包含 lastCommit)
+              # 修正的 git log 范围语法: <旧commit>...<新commit>
+              git log --pretty=format:%B ${lastCommit:0:7}...${{ env.commitS }}
+            fi
           fi | \
           # 后续管道处理 commit 消息：
           # 1. 将两个或多个空格替换为换行符
@@ -202,16 +211,7 @@ echo \-e "Credit\: \[</span>{{ matrix.userName }}](${{ env.upStream }})\nCommit:
           sort -k1,1n | \
           cut -f2- >> apk/${{ matrix.userName }}-Release.log
 
-          # 检查管道命令是否失败 (可选，如果想更精细诊断可以添加)
-          # pipeline_status=${PIPESTATUS[0]} # 捕获 git log 的状态
-          # ... add checks for sed, cat, sort, uniq, cut if needed ...
-          # if [ $pipeline_status -ne 0 ]; then
-          #   echo "Error: git log command in pipeline failed with status $pipeline_status"
-          #   exit 1 # 明确退出
-          # fi
-
-
-          echo -e '\n```' >> apk/${{ matrix.userName }}-Release.log
+          echo -e '\n```' >> apk/${{ matrix.userName }}-Release.log # 多行脚本结束
       - name: Upload App To Artifact
         uses: actions/upload-artifact@v4
         if: ${{ env.commit }}
