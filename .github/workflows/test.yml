@@ -152,30 +152,14 @@ jobs:
             mv "$file" "apk/$new_base"
           done
           mv sourceCode-${{ env.commitS }}.* apk/
-      - name: Release Note
-        if: ${{ env.commit }}
-        working-directory: TVBoxOSC
-        run: |
-          # 尝试从 README.md 获取上一次提交哈希，即使文件不存在或找不到匹配项，也不中断脚本。
-          # 使用 || true 确保 grep 失败时返回 0，避免脚本因文件不存在而终止。
-          lastCommit=$(grep "${{ matrix.userName }}\/${{ matrix.repoName }}" ${{ github.workspace }}/README.md |grep -o '[a-z0-9]\{40\}' || true)
-          echo "Debug: Attempted to get lastCommit: '${lastCommit}'" # 添加调试输出
-
-          export LESSCHARSET=utf-8
-          echo -e "Credit: [${{ matrix.userName }}](${{ env.upStream }})\nCommit: ${{ env.commit }}\nChangelog:\n\`\`\`" > apk/${{ matrix.userName }}-Release.log
-
-          # 检查是否成功获取到 lastCommit 并且与当前提交不同
-          if [ -n "${lastCommit}" ] && [ "${{ env.commit }}" != "${lastCommit}" ]; then
-            echo "Debug: Generating changelog between ${{ env.commitS }} and ${lastCommit:0:7}" # 调试
-            # 生成当前提交与上一次记录提交之间的差异日志
-            git log --pretty=format:%B ${{ env.commitS }}...${lastCommit:0:7} |sed -e "s# \{2,\}#\n#g" -e "/^Merge \(pull\|branch\|remote\)/d" -e '/^$/d' |cat -n |sort -k2,2 -k1,1n |uniq -f1 |sort -k1,1n |cut -f2- >> apk/${{ matrix.userName }}-Release.log
-          else
-            echo "Debug: Generating changelog for single commit ${{ env.commitS }}" # 调试
-            # 如果 lastCommit 为空或与当前提交相同，则只生成当前提交的日志
-            git log --pretty=format:%B ${{ env.commitS }} -1 |sed -e "s# \{2,\}#\n#g" -e "/^Merge \(pull\|branch\|remote\)/d" -e '/^$/d' |cat -n |sort -k2,2 -k1,1n |uniq -f1 |sort -k1,1n |cut -f2- >> apk/${{ matrix.userName }}-Release.log
-          fi
-
-          echo -e '\n```' >> apk/${{ matrix.userName }}-Release.log
+      - name: Release Note
+        if: ${{ env.commit }}
+        working-directory: TVBoxOSC
+        run: |
+          export LESSCHARSET=utf-8
+          echo -e "Credit: [${{ matrix.userName }}](${{ env.upStream }})\nCommit: ${{ env.commit }}\nChangelog:\n\`\`\`" > apk/${{ matrix.userName }}-Release.log
+          git log --pretty=format:%B ${{ env.commitS }} -1 | sed -e "s# \{2,\}#\n#g" -e "/^Merge \(pull\|branch\|remote\)/d" -e '/^$/d' | cat -n | sort -k2,2 -k1,1n | uniq -f1 | sort -k1,1n | cut -f2- >> apk/${{ matrix.userName }}-Release.log
+          echo -e '\n```' >> apk/${{ matrix.userName }}-Release.log
       - name: Upload App To Artifact
         uses: actions/upload-artifact@v4
         if: ${{ env.commit }}
