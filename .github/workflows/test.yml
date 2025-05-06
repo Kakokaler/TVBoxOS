@@ -152,24 +152,33 @@ jobs:
             mv "$file" "apk/$new_base"
           done
           mv sourceCode-${{ env.commitS }}.* apk/
-      - name: Release Note # 步骤名称
-        if: ${{ env.commit }} # 条件判断
-        working-directory: TVBoxOSC # 工作目录
-        run: | # 使用 | 表示多行字符串，其后的所有行都需要相对于此行额外缩进
-          # 尝试从 workflow 仓库的 README.md 中获取上一次记录的 commit SHA
-          lastCommit=$(grep "q215613905\/TVBoxOS" ${{ github.workspace }}/README.md |grep -o '[a-z0-9]\{40\}')
-          echo "Detected lastCommit from README: '$lastCommit'" # 添加此行用于调试，确认是否成功获取到 lastCommit
+- name: Release Note # 步骤名称
+        if: <span class="math-inline">\{\{ env\.commit \}\} \# 条件判断
+working\-directory\: TVBoxOSC \# 工作目录
+run\: \| \# 使用 \| 表示多行字符串，其后的所有行都需要相对于此行额外缩进
+\# 尝试从 workflow 仓库的 README\.md 中获取上一次记录的 commit SHA
+\# 同时捕获 grep 命令的退出状态
+lastCommit\=</span>(grep "q215613905\/TVBoxOS" <span class="math-inline">\{\{ github\.workspace \}\}/README\.md \|grep \-o '\[a\-z0\-9\]\\\{40\\\}'\)
+grep\_status\=</span>? # 捕获上一个管道命令的退出状态
 
-          export LESSCHARSET=utf-8
-          echo -e "Credit: [${{ matrix.userName }}](${{ env.upStream }})\nCommit: ${{ env.commit }}\nChangelog:\n\`\`\`" > apk/${{ matrix.userName }}-Release.log
+          echo "--- Debug Info ---" # 调试分隔符
+          echo "Detected lastCommit from README: '$lastCommit' (grep exit status: <span class="math-inline">grep\_status\)" \# 打印 lastCommit 的值和 grep 的退出状态
+echo "Current commit \(full\)\: '</span>{{ env.commit }}'"
+          echo "Current commit (short): '<span class="math-inline">\{\{ env\.commitS \}\}'"
+echo "\-\-\- End Debug Info \-\-\-"
+export LESSCHARSET\=utf\-8
+\# 清空或创建日志文件并写入头部信息
+echo \-e "Credit\: \[</span>{{ matrix.userName }}](${{ env.upStream }})\nCommit: ${{ env.commit }}\nChangelog:\n\`\`\`" > apk/${{ matrix.userName }}-Release.log
 
-          # 检查 lastCommit 是否为空 (-z "$lastCommit") 或者 当前 commit ($commit) 是否与上一次记录的 commit ($lastCommit) 相同
+          # 根据 lastCommit 是否为空或是否等于当前 commit 来决定 git log 的范围
           if [ -z "$lastCommit" ] || [ "${{ env.commit }}" == "$lastCommit" ]; then
-            echo "No previous commit found in README or current commit matches last. Generating changelog for the latest commit only."
-            # 只获取当前 commit 的消息 (使用短 SHA ${{ env.commitS }}，-1 表示只取一条)
+            echo "Condition met (lastCommit empty or matches current). Running git log for single commit."
+            echo "Executing git log: git log --pretty=format:%B ${{ env.commitS }} -1"
+            # 只获取当前 commit 的消息 (使用短 SHA，-1 表示只取一条)
             git log --pretty=format:%B ${{ env.commitS }} -1
           else
-            echo "Generating changelog from ${lastCommit:0:7}...${{ env.commitS }}"
+            echo "Condition not met. Running git log for range."
+            echo "Executing git log: git log --pretty=format:%B ${lastCommit:0:7}...${{ env.commitS }}"
             # 获取 lastCommit 到当前 commit 之间的 commit 消息 (不包含 lastCommit)
             # 修正的 git log 范围语法: <旧commit>...<新commit>
             git log --pretty=format:%B ${lastCommit:0:7}...${{ env.commitS }}
@@ -183,12 +192,24 @@ jobs:
           # 6. 再次按原始编号排序恢复原始顺序
           # 7. 去掉编号
           # 8. 将最终结果追加到日志文件
-          sed -e "s# \{2,\}#\n#g" -e "/^Merge \(pull\|branch\|remote\)/d" -e '/^$/d' -e '/^$/d' | \
+          sed -e "s# \{2,\}#\n#g" \
+              -e "/^Merge \(pull\|branch\|remote\)/d" \
+              -e '/^$/d' \
+              -e '/^$/d' | \
           cat -n | \
           sort -k2,2 -k1,1n | \
           uniq -f1 | \
           sort -k1,1n | \
           cut -f2- >> apk/${{ matrix.userName }}-Release.log
+
+          # 检查管道命令是否失败 (可选，如果想更精细诊断可以添加)
+          # pipeline_status=${PIPESTATUS[0]} # 捕获 git log 的状态
+          # ... add checks for sed, cat, sort, uniq, cut if needed ...
+          # if [ $pipeline_status -ne 0 ]; then
+          #   echo "Error: git log command in pipeline failed with status $pipeline_status"
+          #   exit 1 # 明确退出
+          # fi
+
 
           echo -e '\n```' >> apk/${{ matrix.userName }}-Release.log
       - name: Upload App To Artifact
