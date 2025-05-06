@@ -49,7 +49,16 @@ jobs:
           cd TVBoxOSC
           git checkout ${{ env.commit }}
           echo "tag=$(git log --date=format:'%Y%m%d-%H%M' --pretty=format:%cd ${{ env.commitS }} -1)" >> $GITHUB_ENV
-      - name: Extra Modify
+      - name: Create local.properties # 创建 local.properties 文件
+        if: ${{ env.commit }}
+        working-directory: TVBoxOSC # 确保这是Android项目的根目录
+        run: |
+          echo "sdk.dir=${ANDROID_SDK_ROOT}" > local.properties
+          # 如果你的项目使用NDK，可能也需要指定NDK路径
+          # echo "ndk.dir=${ANDROID_NDK_HOME}" >> local.properties
+          echo "已创建 local.properties 文件，SDK 路径: ${ANDROID_SDK_ROOT}"
+
+      - name: Extra Modify # 额外修改
         if: ${{ env.commit }}
         working-directory: TVBoxOSC
         run: |
