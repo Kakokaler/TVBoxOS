@@ -152,7 +152,7 @@ jobs:
             mv "$file" "apk/$new_base"
           done
           mv sourceCode-${{ env.commitS }}.* apk/
-      - name: Release Note
+- name: Release Note
         if: ${{ env.commit }}
         working-directory: TVBoxOSC
         run: |
