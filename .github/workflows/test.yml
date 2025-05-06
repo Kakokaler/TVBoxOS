@@ -57,27 +57,43 @@ jobs:
           # 如果你的项目使用NDK，可能也需要指定NDK路径
           # echo "ndk.dir=${ANDROID_NDK_HOME}" >> local.properties
           echo "已创建 local.properties 文件，SDK 路径: ${ANDROID_SDK_ROOT}"
-
-      - name: Extra Modify # 额外修改
+      - name: Extra Modify
         if: ${{ env.commit }}
         working-directory: TVBoxOSC
         run: |
           echo '修改VersionName'
           if [ "${{ matrix.userName }}" == "takagen99" ]; then
-            # 进行 sed 修改
             sed -i 's/\.concat(buildTime())/ +\"${{ env.tag }}\"/g' app/build.gradle 
-            # 目前关于页面没有合并我的分支
             sed -i "/android:text=/s#=\"#=\"${{ env.tag }}\\\\n\\\\n#" app/src/main/res/layout/dialog_about.xml
           else
-             sed -i "/versionName/s#[0-9a-zA-Z_\.\'\"-]\+\$#\'${{ env.tag }}\'#" app/build.gradle
-             sed -i "/android:text=/s#=\"#=\"${{ env.tag }}\\\\n\\\\n#" app/src/main/res/layout/dialog_about.xml
+            sed -i "/versionName/s#[0-9a-zA-Z_\.\'\"-]\+\$#\'${{ env.tag }}\'#" app/build.gradle
+            sed -i "/android:text=/s#=\"#=\"${{ env.tag }}\\\\n\\\\n#" app/src/main/res/layout/dialog_about.xml
           fi 
           echo 'crosswalk源，防挂'
           if grep -q 'crosswalk' build.gradle; then
-            sed -i "/crosswalk/a\        maven { url 'https://o0halflife0o.github.io/crosswalk/releases/crosswalk/android/maven2' }" build.gradle
+            sed -i "/crosswalk/a\      maven { url 'https://o0halflife0o.github.io/crosswalk/releases/crosswalk/android/maven2' }" build.gradle
           else
-            sed -i "/jitpack.io/a\        maven { url 'https://o0halflife0o.github.io/crosswalk/releases/crosswalk/android/maven2' }" build.gradle
+            sed -i "/jitpack.io/a\      maven { url 'https://o0halflife0o.github.io/crosswalk/releases/crosswalk/android/maven2' }" build.gradle
           fi
+
+          # --- 针对 Chaquopy 的修改 ---
+          echo '修正Chaquopy的buildPython路径'
+          # 确认 PYRAMID_GRADLE_FILE 路径正确无误
+          PYRAMID_GRADLE_FILE="pyramid/build.gradle"
+
+          if [ -f "$PYRAMID_GRADLE_FILE" ]; then
+            # 使用更新后的 sed 命令注释掉 buildPython 行
+            sed -i -E "s#^[[:space:]]*(buildPython\s*\(.*\))#// \1#" "$PYRAMID_GRADLE_FILE"
+            echo "已尝试注释掉 $PYRAMID_GRADLE_FILE 中的 buildPython 设置。"
+
+            # 验证修改 (可选, 用于调试)
+            echo "--- 修改后的 $PYRAMID_GRADLE_FILE 内容 ---"
+            cat "$PYRAMID_GRADLE_FILE"
+            echo "----------------------------------------------------"
+          else
+            echo "警告: $PYRAMID_GRADLE_FILE 文件未找到，无法修改Chaquopy的buildPython设置。"
+          fi
+          # --- Chaquopy 修改结束 ---
       - name: Compress Source Code
         if: ${{ env.commit }}
         working-directory: TVBoxOSC
