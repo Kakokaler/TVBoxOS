@@ -152,6 +152,22 @@ jobs:
             mv "$file" "apk/$new_base"
           done
           mv sourceCode-${{ env.commitS }}.* apk/
+      - name: Check ABI in APK
+        if: ${{ env.commit }}
+        working-directory: TVBoxOSC
+        run: |
+          echo "开始检查 APK 中包含的 ABI 架构..."
+          for apk in $(find apk/ -name "*.apk"); do
+            echo "==> 检查: $apk"
+            unzip -l "$apk" | grep "^ *[0-9]" | awk '{print $4}' | grep "^lib/" | cut -d/ -f2 | sort | uniq | tee abi_list.txt
+            echo "支持的架构:"
+            cat abi_list.txt
+            count=$(wc -l < abi_list.txt)
+            if [ "$count" -lt 2 ]; then
+              echo "::warning::当前 APK 仅包含 $count 种架构，可能不是多架构构建。"
+            fi
+            echo ""
+          done
       - name: Release Note
         if: ${{ env.commit }}
         working-directory: TVBoxOSC
